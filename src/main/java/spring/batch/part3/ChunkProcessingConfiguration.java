@@ -1,10 +1,12 @@
 package spring.batch.part3;
 
+import io.micrometer.core.instrument.util.StringUtils;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.Step;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.configuration.annotation.JobBuilderFactory;
@@ -83,8 +85,11 @@ public class ChunkProcessingConfiguration {
 
     return ((contribution, chunkContext) -> {
       StepExecution stepExecution = contribution.getStepExecution();
+      JobParameters jobParameters = stepExecution.getJobParameters();
 
-      int chunkSize = 10;
+      String value = jobParameters.getString("chunkSize", "10");
+      int chunkSize = StringUtils.isNotEmpty(value) ? Integer.parseInt(value) : 10;
+
       int fromIndex = stepExecution.getReadCount();
       int toIndex = fromIndex + chunkSize;
 
