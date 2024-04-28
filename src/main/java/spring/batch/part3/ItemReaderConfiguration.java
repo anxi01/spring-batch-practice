@@ -52,7 +52,7 @@ public class ItemReaderConfiguration {
   @Bean
   public Step csvFileStep() throws Exception {
     return stepBuilderFactory.get("csvFileStep")
-        .<Person, Person>chunk(10)
+        .<Person, Person>chunk(3)
         .reader(csvFileItemReader())
         .writer(itemWriter())
         .build();
@@ -61,26 +61,25 @@ public class ItemReaderConfiguration {
   private FlatFileItemReader<Person> csvFileItemReader() throws Exception {
     DefaultLineMapper<Person> lineMapper = new DefaultLineMapper<>();
     DelimitedLineTokenizer tokenizer = new DelimitedLineTokenizer();
-    tokenizer.setNames("id", "name", "age", "address");
+    tokenizer.setNames("name", "age", "sex");
     lineMapper.setLineTokenizer(tokenizer);
 
     lineMapper.setFieldSetMapper(fieldSet -> {
-      int id = fieldSet.readInt("id");
       String name = fieldSet.readString("name");
-      String age = fieldSet.readString("age");
-      String address = fieldSet.readString("address");
+      int age = fieldSet.readInt("age");
+      String sex = fieldSet.readString("sex");
 
-      return new Person(id, name, age, address);
+      return new Person(name, age, sex);
     });
 
     FlatFileItemReader<Person> itemReader = new FlatFileItemReaderBuilder<Person>()
         .name("csvFileItemReader")
         .encoding("UTF-8")
         .resource(new ClassPathResource("test.csv"))
-        .linesToSkip(1) // csv의 첫 번째 로우인 필드명을 스킵하겠다는 의미
         .lineMapper(lineMapper)
+        .linesToSkip(1)
         .build();
-    itemReader.afterPropertiesSet(); // itemReader에서 필수 설정 값이 정상적으로 설정됐는지 확인해주는 메서드
+    itemReader.afterPropertiesSet();
 
     return itemReader;
   }
@@ -95,7 +94,7 @@ public class ItemReaderConfiguration {
     List<Person> items = new ArrayList<>();
 
     for(int i = 0; i < 10; i++) {
-      items.add(new Person(i + 1, "test name" + i, "test age", "test address"));
+      items.add(new Person("test name" + i, i, "test sex"));
     }
 
     return items;
