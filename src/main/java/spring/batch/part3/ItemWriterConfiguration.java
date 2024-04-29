@@ -81,14 +81,12 @@ public class ItemWriterConfiguration {
   }
 
   /**
-   * 현재 merge를 통해 update or insert 실행
-   * persist가 아닌 merge이기 때문에
-   * select 쿼리를 날려 수정 대상이면 update, 저장 대상이면 insert 실행
-   * -> 성능 이슈가 발생할 수 있다.
+   * usePersist를 true로 함으로써 성능 향상을 할 수 있다.
    */
   private ItemWriter<Person> jpaItemWriter() throws Exception {
     JpaItemWriter<Person> itemWriter = new JpaItemWriterBuilder<Person>()
         .entityManagerFactory(entityManagerFactory)
+        .usePersist(true)
         .build();
 
     itemWriter.afterPropertiesSet();
@@ -134,7 +132,7 @@ public class ItemWriterConfiguration {
     List<Person> items = new ArrayList<>();
 
     for (int i = 0; i < 100; i++) {
-      items.add(new Person(i + 1, "test name" + i, "test age", "test address"));
+      items.add(new Person("test name" + i, "test age", "test address"));
     }
 
     return items;
