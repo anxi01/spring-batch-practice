@@ -5,13 +5,15 @@ import lombok.Getter;
 @Getter
 public class Person {
 
+  private int id;
   private String name;
-  private int age;
-  private String sex;
+  private String age;
+  private String address;
 
-  public Person(String name, int age, String sex) {
+  public Person(int id, String name, String age, String address) {
+    this.id = id;
     this.name = name;
     this.age = age;
-    this.sex = sex;
+    this.address = address;
   }
 }
