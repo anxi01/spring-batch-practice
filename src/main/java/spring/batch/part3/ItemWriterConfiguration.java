@@ -2,6 +2,7 @@ package spring.batch.part3;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -13,7 +14,9 @@ import org.springframework.batch.item.ItemReader;
 import org.springframework.batch.item.ItemWriter;
 import org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
+import org.springframework.batch.item.database.JpaItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
+import org.springframework.batch.item.database.builder.JpaItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemWriter;
 import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
 import org.springframework.batch.item.file.transform.BeanWrapperFieldExtractor;
@@ -29,12 +32,15 @@ public class ItemWriterConfiguration {
   private final JobBuilderFactory jobBuilderFactory;
   private final StepBuilderFactory stepBuilderFactory;
   private final DataSource dataSource;
+  private final EntityManagerFactory entityManagerFactory;
 
   public ItemWriterConfiguration(JobBuilderFactory jobBuilderFactory,
-      StepBuilderFactory stepBuilderFactory, DataSource dataSource) {
+      StepBuilderFactory stepBuilderFactory, DataSource dataSource,
+      EntityManagerFactory entityManagerFactory) {
     this.jobBuilderFactory = jobBuilderFactory;
     this.stepBuilderFactory = stepBuilderFactory;
     this.dataSource = dataSource;
+    this.entityManagerFactory = entityManagerFactory;
   }
 
   @Bean
@@ -42,7 +48,8 @@ public class ItemWriterConfiguration {
     return jobBuilderFactory.get("itemWriterJob")
         .incrementer(new RunIdIncrementer())
         .start(this.csvItemWriterStep())
-        .next(this.jdbcBatchItemWriterStep())
+//        .next(this.jdbcBatchItemWriterStep())
+        .next(this.jpaItemWriterStep())
         .build();
   }
 
@@ -62,6 +69,30 @@ public class ItemWriterConfiguration {
         .reader(itemReader())
         .writer(jdbcBatchItemWriter())
         .build();
+  }
+
+  @Bean
+  public Step jpaItemWriterStep() throws Exception {
+    return stepBuilderFactory.get("jpaItemWriterStep")
+        .<Person, Person>chunk(10)
+        .reader(itemReader())
+        .writer(jpaItemWriter())
+        .build();
+  }
+
+  /**
+   * 현재 merge를 통해 update or insert 실행
+   * persist가 아닌 merge이기 때문에
+   * select 쿼리를 날려 수정 대상이면 update, 저장 대상이면 insert 실행
+   * -> 성능 이슈가 발생할 수 있다.
+   */
+  private ItemWriter<Person> jpaItemWriter() throws Exception {
+    JpaItemWriter<Person> itemWriter = new JpaItemWriterBuilder<Person>()
+        .entityManagerFactory(entityManagerFactory)
+        .build();
+
+    itemWriter.afterPropertiesSet();
+    return itemWriter;
   }
 
   private ItemWriter<Person> jdbcBatchItemWriter() {
