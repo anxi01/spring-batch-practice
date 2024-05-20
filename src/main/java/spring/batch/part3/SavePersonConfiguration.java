@@ -22,6 +22,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import spring.batch.part3.SavePersonListener.SavePersonAnnotationJobExecutionListener;
+import spring.batch.part3.SavePersonListener.SavePersonJobExecutionListener;
 
 @Configuration
 @Slf4j
@@ -43,6 +45,8 @@ public class SavePersonConfiguration {
     return jobBuilderFactory.get("savePersonJob")
         .incrementer(new RunIdIncrementer())
         .start(this.savePersonStep(null))
+        .listener(new SavePersonJobExecutionListener())
+        .listener(new SavePersonAnnotationJobExecutionListener())
         .build();
   }
 
