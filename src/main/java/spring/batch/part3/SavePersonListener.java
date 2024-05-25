@@ -1,11 +1,15 @@
 package spring.batch.part3;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
 import org.springframework.batch.core.StepExecution;
+import org.springframework.batch.core.StepExecutionListener;
 import org.springframework.batch.core.annotation.AfterJob;
+import org.springframework.batch.core.annotation.AfterStep;
 import org.springframework.batch.core.annotation.BeforeJob;
+import org.springframework.batch.core.annotation.BeforeStep;
 
 @Slf4j
 public class SavePersonListener {
@@ -40,6 +44,34 @@ public class SavePersonListener {
 
       log.info("annotationAfterJob : {}", sum);
     }
+  }
 
+  public static class SavePersonStepExecutionListener implements StepExecutionListener {
+
+    @Override
+    public void beforeStep(StepExecution stepExecution) {
+      log.info("beforeStep");
+    }
+
+    @Override
+    public ExitStatus afterStep(StepExecution stepExecution) {
+      // AfterStep에서는 ExitStatus를 반환할 수 있음
+      log.info("afterStep : {}", stepExecution.getWriteCount());
+      return stepExecution.getExitStatus();
+    }
+  }
+
+  public static class SavePersonAnnotationStepExecutionListener {
+
+    @BeforeStep
+    public void beforeStep(StepExecution stepExecution) {
+      log.info("annotationbeforeStep");
+    }
+    @AfterStep
+    public ExitStatus afterStep(StepExecution stepExecution) {
+      // AfterStep에서는 ExitStatus를 반환할 수 있음
+      log.info("annotationafterStep : {}", stepExecution.getWriteCount());
+      return stepExecution.getExitStatus();
+    }
   }
 }

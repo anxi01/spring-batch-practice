@@ -24,6 +24,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
 import spring.batch.part3.SavePersonListener.SavePersonAnnotationJobExecutionListener;
 import spring.batch.part3.SavePersonListener.SavePersonJobExecutionListener;
+import spring.batch.part3.SavePersonListener.SavePersonAnnotationStepExecutionListener;
+import spring.batch.part3.SavePersonListener.SavePersonStepExecutionListener;
 
 @Configuration
 @Slf4j
@@ -58,6 +60,8 @@ public class SavePersonConfiguration {
         .reader(itemReader())
         .processor(new DuplicateValidationProcessor<>(Person::getName, Boolean.parseBoolean(allowDuplicate)))
         .writer(itemWriter())
+        .listener(new SavePersonStepExecutionListener())
+        .listener(new SavePersonAnnotationStepExecutionListener())
         .build();
   }
 
