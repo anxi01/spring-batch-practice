@@ -84,7 +84,10 @@ public class SavePersonConfiguration {
         .listener(new SavePersonAnnotationStepExecutionListener())
         .faultTolerant() // skip 예외처리 메서드 제공
         .skip(NotFoundNameException.class)
-        .skipLimit(3) // 3번까지 허용
+        .skipLimit(2)
+        // retry 또한 faultTolerant 하위에 작성
+        .retry(NotFoundNameException.class)
+        .retryLimit(3)
         .build();
   }
 
