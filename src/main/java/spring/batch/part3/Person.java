@@ -4,6 +4,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import java.util.Objects;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -28,5 +29,9 @@ public class Person {
     this.name = name;
     this.age = age;
     this.address = address;
+  }
+
+  public boolean isNotEmptyName() {
+    return Objects.nonNull(this.name) && !this.name.isEmpty();
   }
 }
